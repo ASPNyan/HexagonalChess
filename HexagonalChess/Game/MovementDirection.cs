@@ -1,4 +1,4 @@
-﻿namespace HexagonalChess;
+﻿namespace HexagonalChess.Game;
 
 /// <summary>
 /// Movement direction relative to player position. Diagonal means along a vertex.

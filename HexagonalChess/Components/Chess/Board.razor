@@ -1,0 +1,42 @@
+@using HexagonalChess.Game
+@using System.Diagnostics.CodeAnalysis
+@inject Games Games
+@inject Player Player
+
+<article class="Board" style="position: absolute; aspect-ratio: 1; 
+width: 100vmin; right: 5vw; top: 0; display: flex; justify-content: center; align-items: center">
+    @for (int file = 0; file < BoardState.Files.Length; file++)
+    {
+        <div class="File" style="display: flex; flex-flow: column nowrap; justify-content: center; align-items: center; width: calc(100vmin / 9.5);
+                                height: calc((100vmin / 11) * @_game.BoardState.File(BoardState.Files[file]).Count); transform: translateX(-@(100/7 * file)%)">
+            @foreach (var cell in _game.BoardState.File(BoardState.Files[file]))
+            {
+                <svg style="width: 100%; height: 100%; scale: 1.22;" viewBox="0 0 200 200">
+                    <polygon points="148,183.138438763306 52,183.138438763306 4,100 52,16.8615612366939 148,16.8615612366939 196,100" 
+                             style="stroke: none; fill: var(@($"--Board{cell.Color}"));" />
+                </svg>
+            }
+        </div>
+    }
+</article>
+
+@code {
+    [Parameter, EditorRequired]
+    public Guid GameId { get; set; }
+
+    [NotNull] private GameState? _game = null;
+    private bool _interactive;
+    
+    protected override void OnParametersSet()
+    {
+        if (!Games.ContainsKey(GameId))
+            throw new KeyNotFoundException($"The provided {nameof(GameId)} is not a current game.");
+
+        _game = Games[GameId];
+        
+        _game.AddPlayers(new Player(Guid.Empty, "Example"), new Player(Guid.Empty, "Example"));
+
+        _interactive = Player == _game.Players.Black || Player == _game.Players.White;
+    }
+
+}

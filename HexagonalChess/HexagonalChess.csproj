@@ -6,4 +6,15 @@
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
 
+
+
+
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="wwwroot\svg\Pawn.svg" />
+    </ItemGroup>
+
+
+
+
+
 </Project>

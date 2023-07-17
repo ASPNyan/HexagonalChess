@@ -1,3 +1,17 @@
+:root {
+    --Primary: #0fa;
+    --Background: #111;
+    
+    --BoardDark: #d28c45;
+    --BoardMedium: #e9ad70;
+    --BoardLight: #ffcf9f;
+    
+    --WhitePiece: white;
+    --BlackPiece: black;
+}
+
+/* Blazor preset stuff */
+
 #blazor-error-ui {
     background: lightyellow;
     bottom: 0;

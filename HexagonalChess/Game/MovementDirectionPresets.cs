@@ -1,4 +1,4 @@
-﻿namespace HexagonalChess;
+﻿namespace HexagonalChess.Game;
 
 public static class MovementDirectionPresets
 {

@@ -1,3 +1,17 @@
 ﻿@page "/"
+@inject Games Games
 
-<h1>Hello, world!</h1>
+<h3>@_gameId</h3>
+
+<Board GameId="_gameId" />
+
+@code {
+    private Guid _gameId;
+    
+    protected override void OnInitialized()
+    {
+        _gameId = Games.CreateNew();
+        
+    }
+
+}
