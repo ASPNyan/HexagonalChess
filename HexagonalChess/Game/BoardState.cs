@@ -113,12 +113,12 @@ public class BoardState
             int position = RowLength[..i].Sum();
             var length = RowLength[i];
 
-            int moduloResult = (i + 1) % 3;
+            int moduloResult = i % 3;
             CellColor currentColor = moduloResult switch
             {
-                0 => CellColor.Light,
+                0 => CellColor.Dark,
                 1 => CellColor.Medium,
-                2 => CellColor.Dark,
+                2 => CellColor.Light,
                 _ => CellColor.Light  // This case should never be reached
             };
             
