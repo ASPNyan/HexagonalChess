@@ -1,0 +1,11 @@
+@using HexagonalChess.Game
+
+@code {
+    [Parameter, EditorRequired]
+    public PieceState? PieceState { get; set; }
+
+    [Parameter]
+    public string Style { get; set; } = string.Empty;
+
+    protected string Color => PieceState?.IsWhite ?? true ? "White" : "Black";
+}

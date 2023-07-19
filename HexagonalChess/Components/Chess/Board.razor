@@ -1,17 +1,28 @@
 @using HexagonalChess.Game
 @using System.Diagnostics.CodeAnalysis
+@using System.Text.Json
 @inject Games Games
 @inject Player Player
+@inject IJSRuntime Js
 
-<article class="Board" style="position: absolute; aspect-ratio: 1; 
+<article class="Board" style="position: absolute; scale: 0.98;
 width: 100vmin; right: 5vw; top: 0; display: flex; justify-content: center; align-items: center">
     @for (int file = 0; file < BoardState.Files.Length; file++)
     {
         <div class="File" style="display: flex; flex-flow: column nowrap; justify-content: center; align-items: center; width: calc(100vmin / 9.5);
-                                height: calc((100vmin / 11) * @_game.BoardState.File(BoardState.Files[file]).Count); transform: translateX(-@(100/7 * file)%)">
+        height: calc((100vmin / 11) * @_game.BoardState.File(BoardState.Files[file]).Count); transform: translateX(-@(100/7 * file + 20)%); translate: 90% 0;">
             @foreach (var cell in _game.BoardState.File(BoardState.Files[file]))
             {
-                <svg style="width: 100%; height: 100%; scale: 1.22;" viewBox="0 0 200 200">
+                try
+                {
+                    _cellRefs.Add(cell.Coord, null);
+                }
+                catch (ArgumentException)
+                {
+                    // Catch recurring cell references.
+                }
+
+                <svg style="width: 100%; height: 100%; scale: 1.23;" viewBox="0 0 200 200" @ref="@_cellRefs[cell.Coord]">
                     <polygon points="148,183.138438763306 52,183.138438763306 4,100 52,16.8615612366939 148,16.8615612366939 196,100"
                              style="stroke: none; fill: var(@($"--Board{cell.Color}"));" />
                 </svg>
@@ -20,13 +31,19 @@ width: 100vmin; right: 5vw; top: 0; display: flex; justify-content: center; alig
     }
 </article>
 
+<RenderFragments Fragments="_pieceRendering" />
+
 @code {
     [Parameter, EditorRequired]
     public Guid GameId { get; set; }
 
     [NotNull] private GameState? _game = null;
     private bool _interactive;
-    
+
+    private Dictionary<string, ElementReference?> _cellRefs = new();
+
+    private List<RenderFragment> _pieceRendering = new();
+
     protected override void OnParametersSet()
     {
         if (!Games.ContainsKey(GameId))
@@ -39,4 +56,42 @@ width: 100vmin; right: 5vw; top: 0; display: flex; justify-content: center; alig
         _interactive = Player == _game.Players.Black || Player == _game.Players.White;
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        foreach (var (coord, reference) in _cellRefs)
+        {
+            var activePiece = _game.BoardState[coord].ActivePiece;
+
+            if (activePiece is null) continue;
+
+            var cssCoords = await GetElementCoordinatesAsync(reference!.Value);
+            double top = ((JsonElement)cssCoords["top"]).Deserialize<double>();
+            double left = ((JsonElement)cssCoords["left"]).Deserialize<double>();
+
+            _pieceRendering.Add(builder =>
+            {
+                Type pieceType = activePiece.Name switch 
+                {
+                    "Bishop" => typeof(Bishop),
+                    "King" => typeof(King),
+                    "Knight" => typeof(Knight),
+                    "Pawn" => typeof(Pawn),
+                    "Queen" => typeof(Queen),
+                    "Rook" => typeof(Rook),
+                    _ => typeof(Pawn)
+                };
+                builder.OpenComponent(0, pieceType);
+                builder.AddAttribute(1, "PieceState", activePiece);
+                builder.AddAttribute(2, "style", $"position: absolute; top: {top}px; left: {left}px; width: calc(100vmin / 18.7); height: calc(100vmin / 18.7); scale: 1.7; translate: 50% 50%;");
+                builder.CloseComponent();
+            });
+        }
+        StateHasChanged();
+    }
+
+    private async Task<Dictionary<string, object>> GetElementCoordinatesAsync(ElementReference elementReference)
+        => await Js.InvokeAsync<Dictionary<string, object>>("getCoordinates", elementReference);
 }

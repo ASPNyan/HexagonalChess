@@ -1,0 +1,9 @@
+@foreach (var fragment in Fragments)
+{
+    @fragment
+}
+
+@code {
+    [Parameter]
+    public IEnumerable<RenderFragment> Fragments { get; set; } = new List<RenderFragment>();
+}

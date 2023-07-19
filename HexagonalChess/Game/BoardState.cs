@@ -176,7 +176,7 @@ public class BoardState
         this["G4"].ActivePiece = PieceState.Pawn(this["G4"].Id, true);
         
         for (int i = 1; i <= 3; i++)
-            this[$"F{i}"].ActivePiece = PieceState.Bishop(this[$"F{i}"].Id, false);
+            this[$"F{i}"].ActivePiece = PieceState.Bishop(this[$"F{i}"].Id, true);
         
         this["E1"].ActivePiece = PieceState.Queen(this["E1"].Id, true);
         this["G1"].ActivePiece = PieceState.King(this["G1"].Id, true);
