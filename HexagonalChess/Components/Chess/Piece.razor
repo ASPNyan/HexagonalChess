@@ -1,11 +1,19 @@
 @using HexagonalChess.Game
+@using System.Diagnostics.CodeAnalysis
 
 @code {
-    [Parameter, EditorRequired]
+    [Parameter, EditorRequired, NotNull]
     public PieceState? PieceState { get; set; }
 
     [Parameter]
     public string Style { get; set; } = string.Empty;
 
+    [Parameter]
+    public string PathStyle { get; set; } = string.Empty;
+
+    [Parameter]
+    public Action<PieceState> OnClick { get; set; } = _ => { };
+
     protected string Color => PieceState?.IsWhite ?? true ? "White" : "Black";
+    protected string OppositeColor => !PieceState?.IsWhite ?? false ? "White" : "Black";
 }

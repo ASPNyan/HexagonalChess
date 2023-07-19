@@ -59,7 +59,7 @@ public class BoardState
 
     public readonly Dictionary<int, CellState> Cells;
 
-    public List<CellState> GetAllCells() => Cells.Values.ToList();
+    public IEnumerable<CellState> GetAllCells() => Cells.Values.ToList();
 
     public CellState this[string cell]
     {
@@ -149,42 +149,81 @@ public class BoardState
         /* Black */
 
         foreach (var cell in Rank(7))
-            this[cell.Coord].ActivePiece = PieceState.Pawn(cell.Id, false);
+            this[cell.Coord].ActivePiece = PieceState.Pawn(cell.Id, false, cell.Coord);
 
         for (int i = 9; i <= 11; i++)
-            this[$"F{i}"].ActivePiece = PieceState.Bishop(this[$"F{i}"].Id, false);
+            this[$"F{i}"].ActivePiece = PieceState.Bishop(this[$"F{i}"].Id, false, $"F{i}");
 
-        this["E10"].ActivePiece = PieceState.Queen(this["E10"].Id, false);
-        this["G10"].ActivePiece = PieceState.King(this["G10"].Id, false);
-        this["D9"].ActivePiece = PieceState.Knight(this["D9"].Id, false);
-        this["H9"].ActivePiece = PieceState.Knight(this["H9"].Id, false);
-        this["C8"].ActivePiece = PieceState.Rook(this["C8"].Id, false);
-        this["I8"].ActivePiece = PieceState.Rook(this["C8"].Id, false);
+        this["E10"].ActivePiece = PieceState.Queen(this["E10"].Id, false, "E10");
+        this["G10"].ActivePiece = PieceState.King(this["G10"].Id, false, "G10");
+        this["D9"].ActivePiece = PieceState.Knight(this["D9"].Id, false, "D9");
+        this["H9"].ActivePiece = PieceState.Knight(this["H9"].Id, false, "H9");
+        this["C8"].ActivePiece = PieceState.Rook(this["C8"].Id, false, "C8");
+        this["I8"].ActivePiece = PieceState.Rook(this["C8"].Id, false, "C8");
         
         /* White */
         
         for (int i = 1; i <= 5; i++)
         {
-            char file = (char)('G' - i);
+            char file = (char)('A' + i);
             string cell = $"{file}{i}";
-            this[cell].ActivePiece = PieceState.Pawn(this[cell].Id, true);
+            this[cell].ActivePiece = PieceState.Pawn(this[cell].Id, true, cell);
         }
 
-        this["K1"].ActivePiece = PieceState.Pawn(this["K1"].Id, true);
-        this["I2"].ActivePiece = PieceState.Pawn(this["I2"].Id, true);
-        this["H3"].ActivePiece = PieceState.Pawn(this["H3"].Id, true);
-        this["G4"].ActivePiece = PieceState.Pawn(this["G4"].Id, true);
+        this["K1"].ActivePiece = PieceState.Pawn(this["K1"].Id, true, "K1");
+        this["I2"].ActivePiece = PieceState.Pawn(this["I2"].Id, true, "I2");
+        this["H3"].ActivePiece = PieceState.Pawn(this["H3"].Id, true, "H3");
+        this["G4"].ActivePiece = PieceState.Pawn(this["G4"].Id, true, "G4");
         
         for (int i = 1; i <= 3; i++)
-            this[$"F{i}"].ActivePiece = PieceState.Bishop(this[$"F{i}"].Id, true);
+            this[$"F{i}"].ActivePiece = PieceState.Bishop(this[$"F{i}"].Id, true, $"F{i}");
         
-        this["E1"].ActivePiece = PieceState.Queen(this["E1"].Id, true);
-        this["G1"].ActivePiece = PieceState.King(this["G1"].Id, true);
-        this["D1"].ActivePiece = PieceState.Knight(this["D1"].Id, true);
-        this["H1"].ActivePiece = PieceState.Knight(this["H1"].Id, true);
-        this["C1"].ActivePiece = PieceState.Rook(this["C1"].Id, true);
-        this["I1"].ActivePiece = PieceState.Rook(this["I1"].Id, true);
+        this["E1"].ActivePiece = PieceState.Queen(this["E1"].Id, true, "E1");
+        this["G1"].ActivePiece = PieceState.King(this["G1"].Id, true, "G1");
+        this["D1"].ActivePiece = PieceState.Knight(this["D1"].Id, true, "D1");
+        this["H1"].ActivePiece = PieceState.Knight(this["H1"].Id, true, "H1");
+        this["C1"].ActivePiece = PieceState.Rook(this["C1"].Id, true, "C1");
+        this["I1"].ActivePiece = PieceState.Rook(this["I1"].Id, true, "I1");
     }
+
+    public List<CellState> CalculatePawnMoves(PieceState piece, (PieceState piece, string origin)? lastMove = null)
+    {
+        var coord = piece.Coord;
+        var moveList = new List<CellState>();
+
+        if (piece.IsWhite)
+        {
+            var startingSquare = coord is "B1" or "C2" or "D3" or "E4" or "F5" or "G4" or "H3" or "I2" or "K1";
+
+            (string left, string right) attackingCells 
+                = (MoveCoord(coord, -1, 2), MoveCoord(coord, 1, 2));
+
+            if (this[attackingCells.left].ActivePiece is not null ||
+                (lastMove?.piece.Name is "Pawn" && lastMove.Value.piece.Coord == MoveCoord(coord, -1, 1) && // en passant checking
+                 lastMove.Value.origin == MoveCoord(coord, -1, 3)))
+            {
+                moveList.Add(this[attackingCells.left]);
+            }
+            
+            if (this[attackingCells.right].ActivePiece is not null ||
+                (lastMove?.piece.Name is "Pawn" && lastMove.Value.piece.Coord == MoveCoord(coord, 1, 1) && // en passant checking
+                 lastMove.Value.origin == MoveCoord(coord, 1, 3)))
+            {
+                moveList.Add(this[attackingCells.right]);
+            }
+            
+            // TODO: Add movement checking for forwards movement, add attacking cells to own method for complexity management.
+        }
+        else
+        {
+            var startingSquare = coord[1..] == "7";
+        }
+
+        return moveList;
+    }
+
+    public static string MoveCoord(string coord, int fileDiff, int rankDiff)
+        => $"{coord[0]+fileDiff}{int.Parse(coord[1..])+rankDiff}";
 
     public static readonly char[] Files = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L' };
     public static readonly int[] Ranks = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };

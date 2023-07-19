@@ -83,13 +83,30 @@ width: 100vmin; right: 5vw; top: 0; display: flex; justify-content: center; alig
                     "Rook" => typeof(Rook),
                     _ => typeof(Pawn)
                 };
+                
                 builder.OpenComponent(0, pieceType);
                 builder.AddAttribute(1, "PieceState", activePiece);
-                builder.AddAttribute(2, "style", $"position: absolute; top: {top}px; left: {left}px; width: calc(100vmin / 18.7); height: calc(100vmin / 18.7); scale: 1.7; translate: 50% 50%;");
+                builder.AddAttribute(2, "style", $"position: absolute; top: {top}px; left: {left}px; width: calc(100vmin / 18.7); height: calc(100vmin / 18.7); scale: 1.4; translate: 50% 50%;");
+                builder.AddAttribute(3, "PathStyle", "scale: 1.2; translate: -3% 0%;");
+                builder.AddAttribute(4, "OnClick", OnPieceClick);
                 builder.CloseComponent();
             });
         }
         StateHasChanged();
+    }
+
+    private void OnPieceClick(PieceState piece)
+    {
+        if (!_interactive) return;
+
+        if ((Player == _game.Players.White && !piece.IsWhite) || (Player == _game.Players.Black && !piece.IsWhite))
+            return;
+
+        switch (piece.Name)
+        {
+            case "Pawn":
+                break;
+        }
     }
 
     private async Task<Dictionary<string, object>> GetElementCoordinatesAsync(ElementReference elementReference)
