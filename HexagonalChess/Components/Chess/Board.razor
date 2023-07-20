@@ -44,6 +44,18 @@ width: 100vmin; right: 5vw; top: 0; display: flex; justify-content: center; alig
 
     private List<RenderFragment> _pieceRendering = new();
 
+    private List<RenderFragment> _moveRendering
+    {
+        get
+        {
+            //TODO: implement showing of allowed moves.
+            return new List<RenderFragment>();
+        }
+    }
+
+    private List<CellState>? _visibleMoves;
+    private PieceState? _activePiece;
+
     protected override void OnParametersSet()
     {
         if (!Games.ContainsKey(GameId))
@@ -102,11 +114,11 @@ width: 100vmin; right: 5vw; top: 0; display: flex; justify-content: center; alig
         if ((Player == _game.Players.White && !piece.IsWhite) || (Player == _game.Players.Black && !piece.IsWhite))
             return;
 
-        switch (piece.Name)
+        _visibleMoves = piece.Name switch
         {
-            case "Pawn":
-                break;
-        }
+            "Pawn" => _game.CalculatePawnMoves(piece),
+            _ => _visibleMoves
+        };
     }
 
     private async Task<Dictionary<string, object>> GetElementCoordinatesAsync(ElementReference elementReference)

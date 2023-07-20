@@ -13,7 +13,7 @@ public enum MovementDirection
     /// Due to the knights unusual movement, it receives its own direction separate from the others.
     /// </summary>
     Knight = -1<<31,
-    PawnAttack = -1<<30,
+    PawnAttack = DiagonalRight | DiagonalLeft,
     
     Forward = 1<<12,
     DiagonalForwardRight = 1<<1,

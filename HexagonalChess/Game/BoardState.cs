@@ -3,7 +3,7 @@
 public class BoardState
 {
     // ew, this looks horrible like this.
-    private static readonly string[] BoardLayout =
+    internal static readonly string[] BoardLayout =
     {
                       "F11", // 1
                    "E10", "G10", // 2
@@ -185,45 +185,6 @@ public class BoardState
         this["C1"].ActivePiece = PieceState.Rook(this["C1"].Id, true, "C1");
         this["I1"].ActivePiece = PieceState.Rook(this["I1"].Id, true, "I1");
     }
-
-    public List<CellState> CalculatePawnMoves(PieceState piece, (PieceState piece, string origin)? lastMove = null)
-    {
-        var coord = piece.Coord;
-        var moveList = new List<CellState>();
-
-        if (piece.IsWhite)
-        {
-            var startingSquare = coord is "B1" or "C2" or "D3" or "E4" or "F5" or "G4" or "H3" or "I2" or "K1";
-
-            (string left, string right) attackingCells 
-                = (MoveCoord(coord, -1, 2), MoveCoord(coord, 1, 2));
-
-            if (this[attackingCells.left].ActivePiece is not null ||
-                (lastMove?.piece.Name is "Pawn" && lastMove.Value.piece.Coord == MoveCoord(coord, -1, 1) && // en passant checking
-                 lastMove.Value.origin == MoveCoord(coord, -1, 3)))
-            {
-                moveList.Add(this[attackingCells.left]);
-            }
-            
-            if (this[attackingCells.right].ActivePiece is not null ||
-                (lastMove?.piece.Name is "Pawn" && lastMove.Value.piece.Coord == MoveCoord(coord, 1, 1) && // en passant checking
-                 lastMove.Value.origin == MoveCoord(coord, 1, 3)))
-            {
-                moveList.Add(this[attackingCells.right]);
-            }
-            
-            // TODO: Add movement checking for forwards movement, add attacking cells to own method for complexity management.
-        }
-        else
-        {
-            var startingSquare = coord[1..] == "7";
-        }
-
-        return moveList;
-    }
-
-    public static string MoveCoord(string coord, int fileDiff, int rankDiff)
-        => $"{coord[0]+fileDiff}{int.Parse(coord[1..])+rankDiff}";
 
     public static readonly char[] Files = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L' };
     public static readonly int[] Ranks = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
