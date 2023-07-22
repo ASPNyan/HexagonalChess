@@ -96,22 +96,25 @@ public class GameState
     }
 
     public Action? OnFinish { get; init; }
+
+    public List<CellState> CalculateMoves(PieceState piece)
+    {
+        if (piece.Name is "Pawn")
+            return CalculatePawnMoves(piece);
+
+        if (piece.Name is "Knight")
+            return CalculateKnightMoves(piece);
+
+        if (piece.Name is "King")
+            return FindMovesInPieceDirection(piece, true, 1);
+
+        return FindMovesInPieceDirection(piece, true);
+    }
     
-    public List<CellState> CalculatePawnMoves(PieceState piece)
+    private List<CellState> CalculatePawnMoves(PieceState piece)
     {
         var coord = piece.Coord;
         var moveList = new List<CellState>();
-
-        /*if (piece.IsWhite)
-        {
-
-            (string left, string right) attackingCells 
-                = (MoveCoord(coord, -1, 2), MoveCoord(coord, 1, 2));
-
-            moveList.AddRange(CheckAttackingPawnMoves(coord, attackingCells, true, lastMove));
-            
-            
-        }*/
 
         bool startingSquare;
         
@@ -120,7 +123,9 @@ public class GameState
         else
             startingSquare = coord[1..] == "7";
 
-        var getAttackingCells = FindMovesAlongVertex(coord, MovementDirection.PawnAttack, true, piece.IsWhite, 1).ToList();
+        // TODO: Fix the use of a combined enum here where only one value will be used.
+        
+        var getAttackingCells = FindMovesAlongSide(coord, MovementDirection.PawnAttack, true, piece.IsWhite, 1).ToList();
 
         Move? lastMove;
         try
@@ -175,19 +180,24 @@ public class GameState
         return moveList;
     }
 
+    private List<CellState> CalculateKnightMoves(PieceState piece)
+    {
+        throw new NotImplementedException($"Knight moves are not yet available through {nameof(CalculateKnightMoves)}.");
+    }
     
-    private IEnumerable<CellState> FindMovesInPieceDirection(PieceState piece, bool takes, int? moveDistance = null)
+    private List<CellState> FindMovesInPieceDirection(PieceState piece, bool takes, int? moveDistance = null)
     {
         string coord = piece.Coord;
 
         var moveList = new List<CellState>();
+        
         var movementDirectionsSide = new[] { 
             MovementDirection.Forward,
             MovementDirection.ForwardRight, 
             MovementDirection.ForwardLeft,
             MovementDirection.Backward,
             MovementDirection.BackwardRight,
-            MovementDirection.BackwardLeft 
+            MovementDirection.BackwardLeft
         };
                         
         var movementDirectionsVertex = new[] { 

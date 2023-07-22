@@ -34,4 +34,20 @@ public class PieceState
         Direction = direction;
         AttackDir = attackDir ?? direction;
     }
+
+    public static bool operator ==(PieceState? piece1, PieceState? piece2)
+    {
+        if (piece1 is null || piece2 is null)
+            return false;
+        
+        return piece1?.Id == piece2?.Id;
+    }
+    
+    public static bool operator !=(PieceState? piece1, PieceState? piece2)
+    {
+        if (piece1 is null || piece2 is null)
+            return true;
+        
+        return piece1?.Id != piece2?.Id;
+    }
 }

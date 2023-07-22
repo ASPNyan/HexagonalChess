@@ -20,11 +20,14 @@ width: 100vmin; right: 5vw; top: 0; display: flex; justify-content: center; alig
                 catch (ArgumentException)
                 {
                     // Catch recurring cell references.
+                    // This will occur at StateHasChanged(), so catching it and doing nothing is the best way to deal with it.
                 }
 
                 <svg style="width: 100%; height: 100%; scale: 1.23;" viewBox="0 0 200 200" @ref="@_cellRefs[cell.Coord]">
                     <polygon points="148,183.138438763306 52,183.138438763306 4,100 52,16.8615612366939 148,16.8615612366939 196,100"
-                             style="stroke: none; fill: var(@($"--Board{cell.Color}"));" />
+                             style="stroke: none; fill: var(@($"--Board{cell.Color}"));"/>
+                    <circle r="83" fill="transparent" cx="100" cy="100" style="z-index: 101;"/>
+                    @if (_visibleMoves?.Contains(cell) is true) {<circle r="10" fill="#999a" cx="100" cy="100"/>}
                 </svg>
             }
         </div>
@@ -43,15 +46,6 @@ width: 100vmin; right: 5vw; top: 0; display: flex; justify-content: center; alig
     private Dictionary<string, ElementReference?> _cellRefs = new();
 
     private List<RenderFragment> _pieceRendering = new();
-
-    private List<RenderFragment> _moveRendering
-    {
-        get
-        {
-            //TODO: implement showing of allowed moves.
-            return new List<RenderFragment>();
-        }
-    }
 
     private List<CellState>? _visibleMoves;
     private PieceState? _activePiece;
@@ -100,26 +94,35 @@ width: 100vmin; right: 5vw; top: 0; display: flex; justify-content: center; alig
                 builder.AddAttribute(1, "PieceState", activePiece);
                 builder.AddAttribute(2, "style", $"position: absolute; top: {top}px; left: {left}px; width: calc(100vmin / 18.7); height: calc(100vmin / 18.7); scale: 1.4; translate: 50% 50%;");
                 builder.AddAttribute(3, "PathStyle", "scale: 1.2; translate: -3% 0%;");
-                builder.AddAttribute(4, "OnClick", OnPieceClick);
                 builder.CloseComponent();
             });
         }
         StateHasChanged();
     }
 
-    private void OnPieceClick(PieceState piece)
+    private void OnCellClick(string coord)
     {
         if (!_interactive) return;
 
-        if ((Player == _game.Players.White && !piece.IsWhite) || (Player == _game.Players.Black && !piece.IsWhite))
+        var cell = _game.BoardState[coord];
+        var piece = cell.ActivePiece;
+
+        bool playerIsWhite = Player == _game.Players.White;
+
+        if (piece is null)
             return;
 
-        _visibleMoves = piece.Name switch
+        if (playerIsWhite == piece.IsWhite)
         {
-            "Pawn" => _game.CalculatePawnMoves(piece),
-            _ => _visibleMoves
-        };
+            if (piece == _activePiece)
+                _visibleMoves = new List<CellState>();
+            
+            _visibleMoves = _game.CalculateMoves(piece); // TODO: Review when not tired as fuck
+        }
+            
+        // TODO: Add movement logic, perhaps create a separate method?
     }
+    
 
     private async Task<Dictionary<string, object>> GetElementCoordinatesAsync(ElementReference elementReference)
         => await Js.InvokeAsync<Dictionary<string, object>>("getCoordinates", elementReference);
